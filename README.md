@@ -1,1 +1,3 @@
-# getting_hands_dirty_with_flutter
+# my_flutter_samples
+
+Sample Flutter Applications created by a noob
