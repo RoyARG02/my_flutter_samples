@@ -1,6 +1,6 @@
 # scaffold_test
 
-A new Flutter project.
+Usage of the Scaffold and the GestureDetector Widget.
 
 ## Getting Started
 
