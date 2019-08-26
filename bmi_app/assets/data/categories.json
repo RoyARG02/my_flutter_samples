@@ -1,0 +1,50 @@
+[
+    {
+      "low": 0,
+      "high": 15,
+      "label": "Very Severly Underweight",
+      "color": "0xFFF44336"
+    },
+    {
+      "low": 15,
+      "high": 16,
+      "label": "Severly Underweight",
+      "color": "0xFFEF5350"
+    },
+    {
+      "low": 16,
+      "high": 18.5,
+      "label": "Underweight",
+      "color": "0xFFE57373"
+    },
+    {
+      "low": 18.5,
+      "high": 25,
+      "label": "Normal Weight",
+      "color": "0xFF4CAF50"
+    },
+    {
+      "low": 25,
+      "high": 30,
+      "label": "Overweight",
+      "color": "0xFFEF9A9A"
+    },
+    {
+      "low": 30,
+      "high": 35,
+      "label": "Moderately Obese",
+      "color": "0xFFE57373"
+    },
+    {
+      "low": 35,
+      "high": 40,
+      "label": "Severely Obese",
+      "color": "0xFFEF5350"
+    },
+    {
+      "low": 40,
+      "high": 99,
+      "label": "Very Severly Obese",
+      "color": "0xFFF44336"
+    }
+  ]
