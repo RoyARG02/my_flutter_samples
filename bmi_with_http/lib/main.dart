@@ -1,7 +1,11 @@
+import 'package:bmi_with_http/utils/http_get.dart';
 import 'package:flutter/material.dart';
-import './ui/help.dart';
+import './help_dialog.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  await getCategories();
+  runApp(MyApp());
+}
 
 class Options {
   List<String> _units;
@@ -40,15 +44,11 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        floatingActionButtonTheme:
-            Theme.of(context).floatingActionButtonTheme.copyWith(
-                  backgroundColor: Colors.purple[800],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(14.0),
-                    ),
-                  ),
-                ),
+        floatingActionButtonTheme: Theme.of(context)
+            .floatingActionButtonTheme
+            .copyWith(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(14.0)))),
       ),
     );
   }
@@ -62,6 +62,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool isDataAvailable;
   TextEditingController _ageInput = new TextEditingController();
   TextEditingController _heightInput = new TextEditingController();
   TextEditingController _weightInput = new TextEditingController();
@@ -72,8 +73,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    result = '';
+    isDataAvailable = bmiCategories.isNotEmpty;
     category = '';
+    result = isDataAvailable
+        ? ''
+        : 'Cannot calculate BMI: Missing network connection. Refresh to try again.';
   }
 
   @override
@@ -102,31 +106,26 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  String getCategory(double bmi) {
-    if (bmi > 40) {
-      categoryColor = Colors.red;
-      return 'Very Severly Obese';
-    } else if (bmi > 35) {
-      categoryColor = Colors.red[400];
-      return 'Severly Obese';
-    } else if (bmi > 30) {
-      categoryColor = Colors.red[300];
-      return 'Moderately Obese';
-    } else if (bmi > 25) {
-      categoryColor = Colors.red[200];
-      return 'Overweight';
-    } else if (bmi > 18.5) {
-      categoryColor = Colors.green;
-      return 'Normal weight';
-    } else if (bmi > 16) {
-      categoryColor = Colors.red[300];
-      return 'Underweight';
-    } else if (bmi > 15) {
-      categoryColor = Colors.red[400];
-      return 'Severly Underweight';
-    } else {
-      categoryColor = Colors.red;
-      return 'Very Severly Underweight';
+  Future<void> _refresh() async {
+    await getCategories().then((_) {
+      setState(() {
+        isDataAvailable = bmiCategories.isNotEmpty;
+        result = isDataAvailable
+            ? ''
+            : 'Cannot calculate BMI: Missing network connection. Refresh to try again.';
+      });
+    });
+  }
+
+  void getCategory(double bmi) async {
+    for (num i = bmiCategories.length - 1; i > -1; --i) {
+      if (bmi > bmiCategories[i].min) {
+        category = bmiCategories[i].description;
+        categoryColor = Color(
+            int.parse(bmiCategories[i].tagColor.substring(4, 10), radix: 16) +
+                0xFF000000);
+        break;
+      }
     }
   }
 
@@ -150,8 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
       if (result.isEmpty) {
         double bmi = double.parse(_calculateBMI().toStringAsFixed(2));
         result = 'BMI: ${bmi.toString()}';
+        getCategory(bmi);
         category =
-            '${getCategory(bmi)} ${(int.parse(_ageInput.text) < 20) ? '(See Info)' : ''}';
+            '$category ${(int.parse(_ageInput.text) < 20) ? '(See Info)' : ''}';
       }
     });
   }
@@ -192,69 +192,76 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.info),
-            onPressed: () => _showHelp(context),
+            onPressed: (isDataAvailable) ? () => _showHelp(context) : null,
             tooltip: 'Additional Information',
           )
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 120.0, vertical: 50.0),
-        physics: BouncingScrollPhysics(),
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              InputField(
-                label: 'Age',
-                inputcontroller: _ageInput,
-              ),
-              SizedBox(
-                height: 25.0,
-              ),
-              InputField(
-                label: 'Height',
-                inputcontroller: _heightInput,
-                unit: this.widget.heights,
-              ),
-              SizedBox(
-                height: 25.0,
-              ),
-              InputField(
-                label: 'Weight',
-                inputcontroller: _weightInput,
-                unit: this.widget.weights,
-              ),
-              SizedBox(
-                height: 75.0,
-              ),
-            ],
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                result,
-                style: Theme.of(context).textTheme.display2.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 36.0,
-                    ),
-              ),
-              Text(
-                category,
-                style: Theme.of(context).textTheme.display2.copyWith(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 28.0,
-                      color: categoryColor,
-                    ),
-              )
-            ],
-          ),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          padding: EdgeInsets.symmetric(horizontal: 120.0, vertical: 50.0),
+          physics: AlwaysScrollableScrollPhysics(),
+          children: <Widget>[
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                InputField(
+                  label: 'Age',
+                  inputcontroller: _ageInput,
+                ),
+                SizedBox(
+                  height: 25.0,
+                ),
+                InputField(
+                  label: 'Height',
+                  inputcontroller: _heightInput,
+                  unit: this.widget.heights,
+                ),
+                SizedBox(
+                  height: 25.0,
+                ),
+                InputField(
+                  label: 'Weight',
+                  inputcontroller: _weightInput,
+                  unit: this.widget.weights,
+                ),
+                SizedBox(
+                  height: 75.0,
+                ),
+              ],
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  result,
+                  style: Theme.of(context).textTheme.display2.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 36.0,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  category,
+                  style: Theme.of(context).textTheme.display2.copyWith(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 28.0,
+                        color: categoryColor,
+                      ),
+                  textAlign: TextAlign.center,
+                )
+              ],
+            ),
+          ],
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton.extended(
         label: Text('Calculate'),
-        onPressed: _setResultStrings,
+        onPressed: (isDataAvailable) ? _setResultStrings : null,
+        backgroundColor:
+            (isDataAvailable) ? Colors.purple[800] : Colors.purple[200],
       ),
     );
   }

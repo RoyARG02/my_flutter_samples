@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 class Help extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      runSpacing: 10.0,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        HelpTable(),
+        Padding(
+          padding: const EdgeInsets.all(6.0),
+          child: HelpTable(),
+        ),
         Text(
           'These figures MAY NOT apply to individuals less than 20 years of age.',
           style: Theme.of(context).textTheme.body1.copyWith(
                 fontWeight: FontWeight.w600,
               ),
+          textAlign: TextAlign.center,
         )
       ],
     );

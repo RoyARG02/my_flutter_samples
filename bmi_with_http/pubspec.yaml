@@ -1,5 +1,5 @@
-name: bmi_app
-description: A simple Flutter application for calculation of BMI.
+name: bmi_with_http
+description: Shows the implementation of fetching data using the http library.
 
 version: 1.0.0+1
 
@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.12.0+2
 
   cupertino_icons: ^0.1.2
 
@@ -22,4 +23,4 @@ flutter:
   uses-material-design: true
 
   assets:
-   - assets/images/bmilogo.png
+    - assets/images/bmilogo.png
