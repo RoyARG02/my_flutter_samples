@@ -1,3 +1,5 @@
-# my_flutter_samples
+# my_flutter_samples(read experiments)
 
-Some applications to demonstrate one or two concepts I learned while using [Flutter](https://flutter.dev).
+Some applications I built during the initial days of learning [Flutter](https://flutter.dev).
+
+Beware of beginner mistakes.
